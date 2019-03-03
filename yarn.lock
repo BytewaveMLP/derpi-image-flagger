@@ -440,9 +440,9 @@ mkdirp@^0.5.1:
     minimist "0.0.8"
 
 node-derpi@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/node-derpi/-/node-derpi-0.2.0.tgz#5326eda0798a016c8548486d69e1f3adc97df9b7"
-  integrity sha512-0vqFsIJUN0c5nhinbApUokTONlBkXjZ95isjz4cOYpyAFDD40JkBEfP3J1SqGCcDzKPINXOwyzTmr58L3uxGNw==
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/node-derpi/-/node-derpi-0.2.2.tgz#ba7933ef978632c281a4cebe49642c425d38c777"
+  integrity sha512-kFhnNWNKQBBmEBCKbGYV598imJsedGCOHS6ZVRzEfKjJhN3C9QhulergVv8jRIw/GH9J5XLGun3XvEjajaa2yg==
   dependencies:
     json2typescript "^1.0.5"
     request "^2.85.0"
