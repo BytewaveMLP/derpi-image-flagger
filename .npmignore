@@ -1,0 +1,4 @@
+out/
+tsconfig.json
+tslint.json
+config.json

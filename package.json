@@ -1,0 +1,23 @@
+{
+  "name": "derpi-image-flagger",
+  "version": "1.0.0",
+  "description": "A Discord bot that flags Depribooru images which may contain Discord TOS-violating content",
+  "main": "out/index.js",
+  "repository": "https://github.com/BytewaveMLP/derpi-image-flagger",
+  "author": {
+    "name": "Eliot Partridge",
+    "email": "byte@code.horse",
+    "url": "https://code.horse"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^11.10.4",
+    "tslint": "^5.13.1",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "node-derpi": "^0.2.0"
+  }
+}

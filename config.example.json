@@ -1,0 +1,9 @@
+{
+	"discord": {
+		"token": ""
+	},
+	"derpi": {
+		"apiKey": "",
+		"bannedTags": []
+	}
+}
