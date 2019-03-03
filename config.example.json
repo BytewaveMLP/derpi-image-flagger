@@ -4,6 +4,10 @@
 	},
 	"derpi": {
 		"apiKey": "",
-		"bannedTags": []
+		"bannedTags": {
+			"nsfw": [],
+			"sfw": [],
+			"both": []
+		}
 	}
 }
