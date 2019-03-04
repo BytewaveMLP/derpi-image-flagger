@@ -2,7 +2,7 @@
 
 > A Discord bot that flags Depribooru images which may contain Discord TOS-violating content
 
-DIF is a Discord bot that attempts to help server moderators maintain Discord ToS compliance by flagging and removig MLP images which may violate Discord's community guidelines. It achieves this by reverse-searching the image on Derpibooru and filtering images which have been tagged with blacklisted tags. It **will not catch all images**, aand is not a solves-all solution, but can be used in conjunction with regular moderation to help keep a server clean.
+DIF is a Discord bot that attempts to help server moderators maintain Discord ToS compliance by flagging and removing MLP images which may violate Discord's community guidelines. This is achieved by reverse-searching the image on Derpibooru and filtering images which have been tagged with blacklisted tags. The bot **will not catch all images**, so this isn't a perfect solution, but it can be used in conjunction with regular moderation to help keep a server clean.
 
 ## Installation
 
