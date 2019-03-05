@@ -33,4 +33,4 @@ $ $EIDTOR config.json
 
 ## License
 
-Copyright (c) 2019, Eliot Partridge. Licensed under [the MIT license](/LICENSE).
+Copyright (c) Eliot Partridge, 2019. Licensed under [the MIT license](/LICENSE).
