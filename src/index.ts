@@ -60,12 +60,40 @@ async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> 
 	});
 
 	for (const result of reverseImageResults.images) {
-		if (result.tagString.split(', ').some(tag => bannedTags.includes(tag))) {
+		if (result.tagNames.some(tag => bannedTags.includes(tag))) {
 			return false;
 		}
 	}
 
 	return true;
+}
+
+async function wait(delay: number) {
+	return new Promise(resolve => setTimeout(resolve, delay));
+}
+
+/**
+ * Creates a message processing function, which can be mapped to all URLs in a message to determine if it is safe
+ *
+ * The inner function returns true if the image is safe, and false if not, and handles graceful fallback and limited reattempts
+ *
+ * @param msg The Discord.js Message object
+ * @param bannedTags The banned tags for this search
+ */
+function createMessageProcessor(msg: Discord.Message, bannedTags: string[]) {
+	return async function removeIfNotSafe(url: string, attempt: number = 1) {
+		console.log(`${msg.id} - Processing ${url}, attempt ${attempt}`);
+		try {
+			if (!await isImageSafe(url, bannedTags)) {
+				return false;
+			}
+		} catch (e) {
+			if (attempt >= 5) return true; // derpi isn't cooperating so just skip it
+			await wait(500 * attempt);
+			await removeIfNotSafe(url, attempt + 1);
+		}
+		return true;
+	};
 }
 
 client.on('message', async msg => {
@@ -77,28 +105,17 @@ client.on('message', async msg => {
 	const appropriateTagSet = nsfwChannel ? config.derpi.bannedTags.nsfw : config.derpi.bannedTags.sfw;
 	const bannedTags = config.derpi.bannedTags.both.concat(appropriateTagSet);
 
-	const messageLinks = getUrls(msg.content);
+	const messageLinks = Array.from(getUrls(msg.content));
 
-	for (const url of messageLinks) {
-		console.log(`${msg.id} - [text] Processing '${url}'`);
+	const messageProcessor = createMessageProcessor(msg, bannedTags);
 
-		if (!await isImageSafe(url, bannedTags) && msg.deletable) {
-			await msg.delete();
-			console.log(`${msg.id} - Message is NOT clean. Removing...`);
-			return msg.reply(`your message was removed for containing images with one of the following tags: \`${bannedTags.join(', ')}\``);
-		}
-	}
+	const linksToProcess = msg.attachments.map(attachment => attachment.url).concat(messageLinks);
+	const processingResults = await Promise.all(linksToProcess.map(link => messageProcessor(link)));
 
-	for (const attachment of msg.attachments.values()) {
-		const url = attachment.url;
-
-		console.log(`${msg.id} - [attach] Processing '${url}'`);
-
-		if (!await isImageSafe(url, bannedTags) && msg.deletable) {
-			await msg.delete();
-			console.log(`${msg.id} - Message is NOT clean. Removing...`);
-			return msg.reply(`your message was removed for containing images with one of the following tags: \`${bannedTags.join(', ')}\``);
-		}
+	if (processingResults.includes(false)) {
+		console.log(`${msg.id} - Message is NOT clean. Removing...`);
+		await msg.delete();
+		return msg.reply(`your message was removed for containing images with one of the following tags on Derpibooru: \`${bannedTags.join(', ')}\``);
 	}
 
 	console.log(`${msg.id} - Message is probably clean.`);
