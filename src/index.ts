@@ -19,6 +19,16 @@ interface BotConfig {
 }
 
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif'].map(ext => `.${ext}`);
+/**
+ * Various things that could end up on the end of URLs due to Discord formatting rules
+ */
+const DISCORD_URL_MANGLINGS = [
+	'||',
+	'%3E',
+	'*',
+	'_',
+	')'
+];
 
 function sleep(ms: number) {
 	return new Promise(resolve => setTimeout(resolve, ms));
@@ -46,13 +56,18 @@ client
 		}
 	});
 
-async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> {
+function cleanupUrl(url: string): string | null {
 	const urlPath = URL.parse(url).pathname;
-	if (!urlPath) return true; // we can't tell
+	if (!urlPath) return null; // we can't tell
 
-	const ext = path.extname(urlPath);
-	if (!ext || !IMAGE_EXTENSIONS.includes(ext)) return true; // probably not an image
+	const extRaw = path.extname(urlPath);
+	const ext = DISCORD_URL_MANGLINGS.reduce((ext, badStr) => ext.split(badStr).join(''), extRaw);
+	if (!ext || !IMAGE_EXTENSIONS.includes(ext)) return null; // probably not an image
 
+	return url.replace(extRaw, ext);
+}
+
+async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> {
 	const reverseImageResults = await Fetch.reverseImageSearch({
 		key: config.derpi.apiKey,
 		url: url,
@@ -77,27 +92,28 @@ client.on('message', async msg => {
 	const appropriateTagSet = nsfwChannel ? config.derpi.bannedTags.nsfw : config.derpi.bannedTags.sfw;
 	const bannedTags = config.derpi.bannedTags.both.concat(appropriateTagSet);
 
-	const messageLinks = getUrls(msg.content);
+	const messageLinks = [...getUrls(msg.content)].concat(msg.attachments.array().map(attachment => attachment.url));
 
-	for (const url of messageLinks) {
-		console.log(`${msg.id} - [text] Processing '${url}'`);
-
-		if (!await isImageSafe(url, bannedTags) && msg.deletable) {
-			await msg.delete();
-			console.log(`${msg.id} - Message is NOT clean. Removing...`);
-			return msg.reply(`your message was removed for containing images with one of the following tags: \`${bannedTags.join(', ')}\``);
-		}
-	}
-
-	for (const attachment of msg.attachments.values()) {
-		const url = attachment.url;
-
-		console.log(`${msg.id} - [attach] Processing '${url}'`);
+	for (const urlRaw of messageLinks) {
+		const url = cleanupUrl(urlRaw);
+		if (!url) continue;
+		console.log(`${msg.id} - Processing ${url}`);
 
 		if (!await isImageSafe(url, bannedTags) && msg.deletable) {
 			await msg.delete();
 			console.log(`${msg.id} - Message is NOT clean. Removing...`);
-			return msg.reply(`your message was removed for containing images with one of the following tags: \`${bannedTags.join(', ')}\``);
+			const warnStr = `Your message was removed for containing images with one of the following tags on Derpibooru: \`${bannedTags.join(', ')}\``;
+			try {
+				await msg.reply(warnStr);
+			} catch (e) {
+				try {
+					console.log(`${msg.id} - Couldn't warn user in chat; Send Messages not allowed on channel #${(msg.channel as Discord.TextChannel).name}. Attempting to DM...`);
+					await msg.author.send(warnStr);
+				} catch (e) {
+					console.log(`${msg.id} - Couldn't warn user over DMs.`);
+				}
+			}
+			return;
 		}
 	}
 
