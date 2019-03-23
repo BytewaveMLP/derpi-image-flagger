@@ -18,6 +18,9 @@ interface BotConfig {
 	};
 }
 
+/**
+ * Common image extensions whitelist
+ */
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif'].map(ext => `.${ext}`);
 /**
  * Various things that could end up on the end of URLs due to Discord formatting rules
@@ -29,6 +32,25 @@ const DISCORD_URL_MANGLINGS = [
 	'_',
 	')'
 ];
+/**
+ * List of known Derpibooru hostnames
+ */
+const DERPIBOORU_HOSTNAMES = [
+	'derpibooru.org',
+	'trixiebooru.org',
+	'www.derpibooru.org',
+	'www.trixiebooru.org'
+];
+/**
+ * List of known Derpi CDN hostnames
+ */
+const DERPICDN_HOSTNAMES = [
+	'derpicdn.net',
+	'www.derpicdn.net'
+];
+
+const DERPIBOORU_IMAGE_ID_REGEXP = /^\/(?:images\/)?(\d+)/;
+const DERPICDN_IMAGE_ID_REGEXP = /^\/img(?:\/(?:view|download))?\/\d+\/\d+\/\d+\/(\d+)/;
 
 function sleep(ms: number) {
 	return new Promise(resolve => setTimeout(resolve, ms));
@@ -56,18 +78,40 @@ client
 		}
 	});
 
+function unmangle(component: string): string {
+	return DISCORD_URL_MANGLINGS.reduce((ext, badStr) => component.split(badStr).join(''), component);
+}
+
 function cleanupUrl(url: string): string | null {
-	const urlPath = URL.parse(url).pathname;
+	const parsedUrl = URL.parse(url);
+	const urlPath = parsedUrl.pathname;
 	if (!urlPath) return null; // we can't tell
 
 	const extRaw = path.extname(urlPath);
-	const ext = DISCORD_URL_MANGLINGS.reduce((ext, badStr) => ext.split(badStr).join(''), extRaw);
-	if (!ext || !IMAGE_EXTENSIONS.includes(ext)) return null; // probably not an image
+	const ext = unmangle(extRaw);
+	if (!IMAGE_EXTENSIONS.includes(ext) && !DERPIBOORU_HOSTNAMES.includes(parsedUrl.hostname as string)) return null; // probably not an image
 
-	return url.replace(extRaw, ext);
+	parsedUrl.pathname = urlPath.replace(extRaw, ext);
+
+	return parsedUrl.href as string;
 }
 
 async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> {
+	const parsedURL = URL.parse(url);
+	const hostname  = parsedURL.hostname as string;
+	const path      = parsedURL.pathname as string;
+	const isDerpibooruLink = DERPIBOORU_HOSTNAMES.includes(hostname);
+	const isDerpiCDNLink   = DERPICDN_HOSTNAMES.includes(hostname);
+	if (isDerpibooruLink || isDerpiCDNLink) {
+		const matches = path.match(isDerpibooruLink ? DERPIBOORU_IMAGE_ID_REGEXP : DERPICDN_IMAGE_ID_REGEXP);
+
+		if (!matches) return true;
+		const imageId = matches[1] as string;
+
+		const image = await Fetch.fetchImage(imageId);
+		return !image.tagNames.some(tag => bannedTags.includes(tag));
+	}
+
 	const reverseImageResults = await Fetch.reverseImageSearch({
 		key: config.derpi.apiKey,
 		url: url,
@@ -75,7 +119,7 @@ async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> 
 	});
 
 	for (const result of reverseImageResults.images) {
-		if (result.tagString.split(', ').some(tag => bannedTags.includes(tag))) {
+		if (result.tagNames.some(tag => bannedTags.includes(tag))) {
 			return false;
 		}
 	}
