@@ -89,7 +89,7 @@ function cleanupUrl(url: string): string | null {
 
 	const extRaw = path.extname(urlPath);
 	const ext = unmangle(extRaw);
-	if (!IMAGE_EXTENSIONS.includes(ext) && !DERPIBOORU_HOSTNAMES.includes(parsedUrl.hostname as string)) return null; // probably not an image
+	if (!IMAGE_EXTENSIONS.includes(ext) && !DERPIBOORU_HOSTNAMES.includes(parsedUrl.hostname as string) && !DERPICDN_HOSTNAMES.includes(parsedUrl.hostname as string)) return null; // probably not an image
 
 	parsedUrl.pathname = urlPath.replace(extRaw, ext);
 
