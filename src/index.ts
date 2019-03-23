@@ -127,7 +127,7 @@ async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> 
 	return true;
 }
 
-client.on('message', async msg => {
+async function processMessage(msg: Discord.Message) {
 	if (msg.author.bot) return;
 	if (msg.channel.type !== 'text') return;
 	if (msg.attachments.size >= 1) await sleep(200); // allow attachments some time to propagate to CDN
@@ -162,6 +162,13 @@ client.on('message', async msg => {
 	}
 
 	console.log(`${msg.id} - Message is probably clean.`);
+}
+
+client.on('message', processMessage);
+client.on('messageUpdate', async (oldMessage, newMessage) => {
+	if (oldMessage.content === newMessage.content) return; // no changes that we care about
+
+	return processMessage(newMessage);
 });
 
 client.login(config.discord.token)
