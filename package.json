@@ -20,5 +20,9 @@
     "discord.js": "^11.4.2",
     "get-urls": "^9.0.0",
     "node-derpi": "^0.3.2"
+  },
+  "scripts": {
+    "postinstall": "yarn run build",
+    "build": "tsc"
   }
 }
