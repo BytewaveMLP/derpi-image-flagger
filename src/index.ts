@@ -79,7 +79,7 @@ client
 	});
 
 function unmangle(component: string): string {
-	return DISCORD_URL_MANGLINGS.reduce((ext, badStr) => component.split(badStr).join(''), component);
+	return DISCORD_URL_MANGLINGS.reduce((_component, badStr) => _component.split(badStr).join(''), component);
 }
 
 function cleanupUrl(url: string): string | null {
@@ -106,7 +106,7 @@ async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> 
 		const matches = path.match(isDerpibooruLink ? DERPIBOORU_IMAGE_ID_REGEXP : DERPICDN_IMAGE_ID_REGEXP);
 
 		if (!matches) return true;
-		const imageId = matches[1] as string;
+		const imageId = matches[1];
 
 		const image = await Fetch.fetchImage(imageId);
 		return !image.tagNames.some(tag => bannedTags.includes(tag));
