@@ -150,7 +150,7 @@ async function processMessage(msg: Discord.Message) {
 			console.log(`${msg.id} - Message is NOT clean. Removing...`);
 			await msg.delete();
 
-			const warnStr = `Your message ${msg.id} was removed for containing images with the following disallowed tag(s) on Derpibooru: \`${badTags.join(', ')}\``;
+			const warnStr = `Your message was removed for containing images with the following disallowed tag(s) on Derpibooru: \`${badTags.join(', ')}\``;
 			try {
 				await msg.reply(warnStr);
 			} catch (e) {
