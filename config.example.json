@@ -5,9 +5,9 @@
 	"derpi": {
 		"apiKey": "",
 		"bannedTags": {
-			"nsfw": [],
-			"sfw": [],
-			"both": []
+			"nsfw": ["diaper fetish", "hyper", "scat", "unbirthing", "vore", "urine", "merch sexpoloitation", "inflation", "fart fetish", "fart"],
+			"sfw": ["explicit", "questionable", "suggestive", "semi-grimdark"],
+			"both": ["foalcon", "gore", "necrophilia", "self harm", "rape", "death", "suicide", "grimdark"]
 		}
 	}
 }
