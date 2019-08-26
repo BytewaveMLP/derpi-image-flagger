@@ -96,7 +96,7 @@ function cleanupUrl(url: string): string | null {
 	return parsedUrl.href as string;
 }
 
-async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> {
+async function isImageSafe(url: string, bannedTags: string[]): Promise<string[]> {
 	const parsedURL = URL.parse(url);
 	const hostname  = parsedURL.hostname as string;
 	const path      = parsedURL.pathname as string;
@@ -105,11 +105,11 @@ async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> 
 	if (isDerpibooruLink || isDerpiCDNLink) {
 		const matches = path.match(isDerpibooruLink ? DERPIBOORU_IMAGE_ID_REGEXP : DERPICDN_IMAGE_ID_REGEXP);
 
-		if (!matches) return true;
+		if (!matches) return [];
 		const imageId = matches[1];
 
 		const image = await Fetch.fetchImage(imageId);
-		return !image.tagNames.some(tag => bannedTags.includes(tag));
+		return image.tagNames.filter(tag => bannedTags.includes(tag));
 	}
 
 	const reverseImageResults = await Fetch.reverseImageSearch({
@@ -119,12 +119,13 @@ async function isImageSafe(url: string, bannedTags: string[]): Promise<boolean> 
 	});
 
 	for (const result of reverseImageResults.images) {
-		if (result.tagNames.some(tag => bannedTags.includes(tag))) {
-			return false;
+		const badTags = result.tagNames.filter(tag => bannedTags.includes(tag));
+		if (badTags.length > 0) {
+			return badTags;
 		}
 	}
 
-	return true;
+	return [];
 }
 
 async function processMessage(msg: Discord.Message) {
@@ -143,10 +144,13 @@ async function processMessage(msg: Discord.Message) {
 		if (!url) continue;
 		console.log(`${msg.id} - Processing ${url}`);
 
-		if (!await isImageSafe(url, bannedTags) && msg.deletable) {
-			await msg.delete();
+		const badTags = await isImageSafe(url, bannedTags);
+
+		if (badTags.length > 0 && msg.deletable) {
 			console.log(`${msg.id} - Message is NOT clean. Removing...`);
-			const warnStr = `Your message was removed for containing images with one of the following tags on Derpibooru: \`${bannedTags.join(', ')}\``;
+			await msg.delete();
+
+			const warnStr = `Your message ${msg.id} was removed for containing images with the following disallowed tag(s) on Derpibooru: \`${badTags.join(', ')}\``;
 			try {
 				await msg.reply(warnStr);
 			} catch (e) {
