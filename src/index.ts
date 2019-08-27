@@ -1,8 +1,8 @@
-import * as Discord from 'discord.js';
+import Discord from 'discord.js';
 import { Fetch } from 'node-derpi';
-import getUrls = require('get-urls');
-import * as URL from 'url';
-import * as path from 'path';
+import getUrls from 'get-urls';
+import URL from 'url';
+import path from 'path';
 
 interface BotConfig {
 	discord: {

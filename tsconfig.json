@@ -4,6 +4,7 @@
 		"target": "es2017",
 		"noImplicitAny": true,
 		"preserveConstEnums": true,
+		"esModuleInterop": true,
 		"sourceMap": true,
 		"strictNullChecks": true,
 		"outDir": "out"
