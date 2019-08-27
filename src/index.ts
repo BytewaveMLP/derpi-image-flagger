@@ -145,7 +145,7 @@ async function processMessage(msg: Discord.Message) {
 
 		if (!await isImageSafe(url, bannedTags) && msg.deletable) {
 			await msg.delete();
-			console.log(`${msg.id} - Message is NOT clean. Removing...`);
+			console.log(`${msg.id} - Message is NOT clean; result contained tags ${bannedTags.join(', ')}. Removing...`);
 			const warnStr = `Your message was removed for containing images with one of the following tags on Derpibooru: \`${bannedTags.join(', ')}\``;
 			try {
 				await msg.reply(warnStr);
