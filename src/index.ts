@@ -133,6 +133,9 @@ async function processMessage(msg: Discord.Message) {
 	if (msg.channel.type !== 'text') return;
 	if (msg.attachments.size >= 1) await sleep(200); // allow attachments some time to propagate to CDN
 
+	console.log(`${msg.id} - Processing message...`);
+	console.log(`${msg.id} - Author: @${msg.author.tag} (${msg.author.id})`);
+
 	const nsfwChannel = (msg.channel as Discord.TextChannel).nsfw;
 	const appropriateTagSet = nsfwChannel ? config.derpi.bannedTags.nsfw : config.derpi.bannedTags.sfw;
 	const bannedTags = config.derpi.bannedTags.both.concat(appropriateTagSet);
