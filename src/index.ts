@@ -140,7 +140,7 @@ async function processMessage(msg: Discord.Message) {
 	const appropriateTagSet = nsfwChannel ? config.derpi.bannedTags.nsfw : config.derpi.bannedTags.sfw;
 	const bannedTags = config.derpi.bannedTags.both.concat(appropriateTagSet);
 
-	const messageLinks = [...getUrls(msg.content)].concat(msg.attachments.array().map(attachment => attachment.url));
+	const messageLinks = [...getUrls(msg.content)].concat(msg.attachments.map(attachment => attachment.url));
 
 	for (const urlRaw of messageLinks) {
 		const url = cleanupUrl(urlRaw);
