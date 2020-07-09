@@ -11,10 +11,10 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^11.10.4",
-    "tslint": "^5.13.1",
-    "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.3.3333"
+    "@types/node": "11.15.3",
+    "tslint": "5.20.1",
+    "tslint-config-standard": "8.0.1",
+    "typescript": "3.7.4"
   },
   "dependencies": {
     "@discordjs/uws": "10.149.0",
