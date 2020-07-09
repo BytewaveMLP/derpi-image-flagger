@@ -17,7 +17,7 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "@discordjs/uws": "10.149.0",
+    "@discordjs/uws": "11.149.1",
     "discord.js": "^11.4.2",
     "get-urls": "^9.0.0",
     "node-derpi": "^0.3.2"
